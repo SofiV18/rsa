@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>CLAVES RSA UwU</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #ff50ff, #5862eb);
+      font-family: Arial, sans-serif;
+      color: #2c2424;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-top: 0;
+    }
+
+    label, input[type="text"], button {
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #003bfc;
+      color: #ffffff;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #003bfc;
+    }
+
+    h2 {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #53a3ff;
+      font-size: 16px;
+    }
+
+    input[type="text"][readonly] {
+      background-color: #f5f5f5;
+      color: #000000;
+    }
+
+    .container {
+      max-width: 500px;
+      text-align: center;
+    }
+    
+    .frame {
+      border: 2px solid #000000;
+      border-radius: 4px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    
+    th, td {
+      padding: 8px;
+      border: 1px solid #000000;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-lock"></i> CLAVES RSA</h1>
+    
+    <div class="frame">
+      <label for="p">Valor de p (primo de 4 dígitos):</label>
+      <input type="text" id="p" placeholder="Introduce un número primo de 4 dígitos">
+      <br>
+      
+      <label for="q">Valor de q (primo de 4 dígitos):</label>
+      <input type="text" id="q" placeholder="Introduce un número primo de 4 dígitos">
+      <br>
+      
+      <button onclick="generarClaves()"><i class="fas fa-key"></i> Generar claves</button>
+      <br>
+      
+      <div class="frame">
+        <h2>Claves</h2>
+      
+        <table>
+          <tr>
+            <th>Pública</th>
+            <td id="clavePublica"></td>
+          </tr>
+          <tr>
+            <th>Privada</th>
+            <td id="clavePrivada"></td>
+          </tr>
+        </table>
+      </div>
+      
+      <div class="frame">
+        <h2>Calculos</h2>
+      
+        <table>
+          <tr>
+            <th>Cálculo de φ(n)</th>
+            <td id="calculoFi"></td>
+          </tr>
+          <tr>
+            <th>Cálculo de n</th>
+            <td id="calculoN"></td>
+          </tr>
+          <tr>
+            <th>Cálculo de e</th>
+            <td id="calculoE"></td>
+          </tr>
+          <tr>
+            <th>Cálculo de d</th>
+            <td id="calculoD"></td>
+          </tr>
+        </table>
+      </div>
+      
+      <h2>Cifrar mensaje:</h2>
+      <label for="mensaje">Mensaje a cifrar:</label>
+      <input type="text" id="mensaje" placeholder="Ingrese el mensaje a cifrar">
+      <button onclick="cifrarMensaje()"><i class="fas fa-lock"></i> Cifrar</button>
+      <br>
+      <label for="mensajeCifrado">Mensaje cifrado:</label>
+      <input type="text" id="mensajeCifrado" readonly>
+      
+      <h2>Descifrar Mensaje:</h2>
+      <label for="mensajeCifradoDescifrar">Mensaje cifrado:</label>
+      <input type="text" id="mensajeCifradoDescifrar" placeholder="Ingrese el mensaje cifrado">
+      <button onclick="descifrarMensaje()"><i class="fas fa-lock-open"></i> Descifrar</button>
+      <br>
+      <label for="mensajeDescifrado">Mensaje descifrado:</label>
+      <input type="text" id="mensajeDescifrado" readonly>
+    </div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+  <script>
+    function generarClaves() {
+        var p = parseInt(document.getElementById("p").value);
+        var q = parseInt(document.getElementById("q").value);
+       
+        if (!esPrimo(p) || !esPrimo(q) || p < 1000 || p > 9999 || q < 1000 || q > 9999) {
+          alert("Los valores utilizados para p y q deben ser números primos de 4 dígitos");
+          return;
+        }
+       
+        if (p === q) {
+          alert("Los valores utilizados para p y q deben ser distintos");
+          return;
+        }
+       
+        var n = p * q;
+        var fi = (p - 1) * (q - 1);
+       
+        var e = generarE(fi);
+        var d = generarD(e, fi);
+       
+        document.getElementById("clavePublica").textContent = e;
+        document.getElementById("clavePrivada").textContent = d;
+        document.getElementById("calculoFi").textContent = fi;
+        document.getElementById("calculoN").textContent = n;
+        document.getElementById("calculoE").textContent = e;
+        document.getElementById("calculoD").textContent = d;
+       }
+       
+       
+       function generarE(fi) {
+        var e = 2;
+        while (e < fi) {
+          if (esPrimo(e) && esCoprimo(e, fi)) {
+            return e;
+          }
+          e++;
+        }
+        return null;
+       }
+       
+       function generarD(e, fi) {
+        var d = inversoMultiplicativo(e, fi);
+        return d;
+       }
+       
+       function esPrimo(num) {
+        for (var i = 2; i <= Math.sqrt(num); i++) {
+          if (num % i === 0) {
+            return false;
+          }
+        }
+        return num > 1;
+       }
+       
+       function esCoprimo(a, b) {
+        while (b !== 0) {
+          var temp = b;
+          b = a % b;
+          a = temp;
+        }
+        return a === 1;
+       }
+       
+       function inversoMultiplicativo(a, m) {
+        var originalM = m;
+        var y = 0;
+        var x = 1;
+       
+        while (a > 1) {
+          var q = Math.floor(a / m);
+          var temp = m;
+          m = a % m;
+          a = temp;
+          temp = y;
+          y = x - q * y;
+          x = temp;
+        }
+       
+        if (x < 0) {
+          x += originalM;
+        }
+       
+        return x;
+       }
+       
+       function cifrarMensaje() {
+        var mensaje = document.getElementById("mensaje").value;
+        var e = parseInt(document.getElementById("clavePublica").textContent);
+        var n = parseInt(document.getElementById("p").value) * parseInt(document.getElementById("q").value);
+       
+        var cifrado = [];
+       
+        for (var i = 0; i < mensaje.length; i++) {
+          var charCode = mensaje.charCodeAt(i);
+          cifrado.push(modularExponentiation(charCode, e, n));
+        }
+       
+        document.getElementById("mensajeCifrado").value = cifrado.join(" ");
+       }
+       
+       function modularExponentiation(base, exponente, n) {
+        if (exponente === 0) {
+          return 1;
+        }
+       
+        var result = 1;
+        base = base % n;
+       
+        while (exponente > 0) {
+          if (exponente % 2 === 1) {
+            result = (result * base) % n;
+          }
+          base = (base * base) % n;
+          exponente = Math.floor(exponente / 2);
+        }
+       
+        return result;
+       }
+       
+       function descifrarMensaje() {
+        var mensajeCifrado = document.getElementById("mensajeCifradoDescifrar").value;
+        var d = parseInt(document.getElementById("clavePrivada").textContent);
+        var n = parseInt(document.getElementById("p").value) * parseInt(document.getElementById("q").value);
+       
+        var cifrado = mensajeCifrado.split(" ");
+        var descifrado = [];
+       
+        for (var i = 0; i < cifrado.length; i++) {
+          var charCode = modularExponentiation(parseInt(cifrado[i]), d, n);
+          descifrado.push(String.fromCharCode(charCode));
+        }
+       
+        document.getElementById("mensajeDescifrado").value = descifrado.join("");
+       }
+       
+  </script>
+</body>
+</html>
